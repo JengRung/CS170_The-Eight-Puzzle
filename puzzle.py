@@ -1,11 +1,11 @@
-import re
+import time
 import numpy    # Help to handle array
-
 
 class pazzle:
     def __init__(self, customMatrix):
         self.matrix = customMatrix
         self.path = []
+        self.cost = 0
         
     def printMatrix(self):
         for row in self.matrix:
@@ -29,14 +29,50 @@ class pazzle:
         
         # Check all 4 childs and add to the array if psosible
         child = []
+        
+        # Right
         if x+1 < len(self.matrix):
-            child.append(pazzle(swap(x, y, x+1, y)))
+            newChild = pazzle(swap(x, y, x+1, y))
+            
+            # Update path and cost for new child
+            newChild.path.extend(self.path)
+            newChild.path.append(self)
+            newChild.cost = self.cost + 1
+            
+            child.append(newChild)
+            
+        # Left
         if x-1 >= 0:
-            child.append(pazzle(swap(x, y, x-1, y)))
+            newChild = pazzle(swap(x, y, x-1, y))
+            
+            # Update path and cost for new child
+            newChild.path.extend(self.path)
+            newChild.path.append(self)
+            newChild.cost = self.cost + 1
+            
+            child.append(newChild)
+           
+        # Down 
         if y+1 < len(self.matrix[x]):
-            child.append(pazzle(swap(x, y, x, y+1)))
+            newChild = pazzle(swap(x, y, x, y+1))
+            
+            # Update path and cost for new child
+            newChild.path.extend(self.path)
+            newChild.path.append(self)
+            newChild.cost = self.cost + 1
+            
+            child.append(newChild)
+            
+        # Up
         if y-1 >= 0:
-            child.append(pazzle(swap(x, y, x, y-1)))
+            newChild = pazzle(swap(x, y, x, y-1))
+            
+            # Update path and cost for new child
+            newChild.path.extend(self.path)
+            newChild.path.append(self)
+            newChild.cost = self.cost + 1
+            
+            child.append(newChild)
 
         return child
     
@@ -65,6 +101,9 @@ def uniformCostSearch(start, goal):
     queue = []
     queue.append(start)
     
+    # An array to keep track of all the visited matrix
+    seen = []
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -74,6 +113,12 @@ def uniformCostSearch(start, goal):
         # Get the first element in the queue
         current = queue.pop(0)
         
+        # dynamic print the seen list size
+        print("Seen: " + str(len(seen)) + " Queue: " + str(len(queue)), end="\r")
+
+        # Add current to seen, convert numpy array to list to be able to compare
+        seen.append(current.getMatrix().tolist())
+        
         # Get all the child of the current matrix
         child = current.getChild()
         
@@ -82,41 +127,77 @@ def uniformCostSearch(start, goal):
             # Check if the child is the same as goal
             if c.checkGoalState(goal):
                 return c
-            else:
-                # Add the child to the queue
+        
+            # If child not in seen, Add the child to the queue
+            if c.getMatrix().tolist() not in seen:
                 queue.append(c)
 
-
+# Goal state            
 goal=numpy.array(
          [[1,2,3],
          [4,5,6],
          [7,8,0]])
 
-puzzle1=numpy.array(
+# Depth 0
+puzzle0=numpy.array(
          [[1,2,3],
          [4,5,6],
          [7,8,0]])
 
+# Depth 2
 puzzle2=numpy.array(
          [[1,2,3],
-         [4,0,6],
-         [7,5,8]])
+         [4,5,6],
+         [0,7,8]])
 
+# Depth 4
 puzzle3=numpy.array(
-         [[4,0,1],
-         [2,6,3],
-         [7,5,8]])
+         [[1,2,3],
+         [5,0,6],
+         [4,7,8]])
 
-p1 = pazzle(puzzle3)
+
+# Depth 8
+puzzle8=numpy.array(
+         [[1,3,6],
+         [5,0,2],
+         [4,7,8]])
+
+# Depth 16
+puzzle16=numpy.array(
+         [[1,6,7],
+         [5,0,3],
+         [4,8,2]])
+
+# Depth 20
+puzzle20=numpy.array(
+         [[7,1,2],
+         [4,8,5],
+         [6,3,0]])
+
+# Depth 24
+puzzle24=numpy.array(
+         [[0,7,2],
+         [4,6,1],
+         [3,5,8]])
+
+# Depth x
+puzzleX=numpy.array(
+         [[4,1,2],
+         [5,3,0],
+         [7,8,6]])
+
+p1 = pazzle(puzzle20)
 p1.printMatrix()
-child = p1.getChild()
-
 print()
 
-# for c in child:
-#     for r in c:
-#         print(r)
-#     print()
+start = time.time()
+final = uniformCostSearch(p1, goal)
+end = time.time()
+print(f"Finish! Taking {end - start} seconds \n \n")
 
-
-print(uniformCostSearch(p1, goal).getMatrix())
+for p in final.path:
+    print(p.getMatrix())
+    print()
+    
+print(final.cost)
