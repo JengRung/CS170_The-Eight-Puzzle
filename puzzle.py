@@ -8,6 +8,12 @@ class pazzle:
             print(row)
             
             
-puzzle1=[[1,2,3],[4,5,6],[7,8,0]]
+puzzle1=[[1,2,3],
+         [4,5,6],
+         [7,8,0]]
+
+puzzle2=[[1,2,3],
+         [4,0,6],
+         [7,5,8]]
 p1 = pazzle(puzzle1)
 p1.printMatrix()
