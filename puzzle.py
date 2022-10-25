@@ -1,10 +1,11 @@
+from gettext import find
 import time
 import numpy    # Help to handle array
 
-class pazzle:
+class puzzle:
     def __init__(self, customMatrix):
         self.matrix = customMatrix
-        self.path = []
+        self.parent = None
         self.cost = 0
         
     def printMatrix(self):
@@ -32,44 +33,40 @@ class pazzle:
         
         # Right
         if x+1 < len(self.matrix):
-            newChild = pazzle(swap(x, y, x+1, y))
+            newChild = puzzle(swap(x, y, x+1, y))
             
             # Update path and cost for new child
-            newChild.path.extend(self.path)
-            newChild.path.append(self)
+            newChild.parent = self
             newChild.cost = self.cost + 1
             
             child.append(newChild)
             
         # Left
         if x-1 >= 0:
-            newChild = pazzle(swap(x, y, x-1, y))
+            newChild = puzzle(swap(x, y, x-1, y))
             
             # Update path and cost for new child
-            newChild.path.extend(self.path)
-            newChild.path.append(self)
+            newChild.parent = self
             newChild.cost = self.cost + 1
             
             child.append(newChild)
            
         # Down 
         if y+1 < len(self.matrix[x]):
-            newChild = pazzle(swap(x, y, x, y+1))
+            newChild = puzzle(swap(x, y, x, y+1))
             
             # Update path and cost for new child
-            newChild.path.extend(self.path)
-            newChild.path.append(self)
+            newChild.parent = self
             newChild.cost = self.cost + 1
             
             child.append(newChild)
             
         # Up
         if y-1 >= 0:
-            newChild = pazzle(swap(x, y, x, y-1))
+            newChild = puzzle(swap(x, y, x, y-1))
             
             # Update path and cost for new child
-            newChild.path.extend(self.path)
-            newChild.path.append(self)
+            newChild.parent = self
             newChild.cost = self.cost + 1
             
             child.append(newChild)
@@ -87,9 +84,6 @@ class pazzle:
     def getMatrix(self):
         return self.matrix
 
-    # TODO Get path from start to now
-    def getPath():
-        pass
 
 def uniformCostSearch(start, goal):
     
@@ -187,7 +181,7 @@ puzzleX=numpy.array(
          [5,3,0],
          [7,8,6]])
 
-p1 = pazzle(puzzle20)
+p1 = puzzle(puzzle16)
 p1.printMatrix()
 print()
 
@@ -196,8 +190,15 @@ final = uniformCostSearch(p1, goal)
 end = time.time()
 print(f"Finish! Taking {end - start} seconds \n \n")
 
-for p in final.path:
-    print(p.getMatrix())
+print(f"COST: {final.cost}")
+
+path = []
+while(final.parent != None):
+    path.append((final.getMatrix(), final.cost))
     print()
+    final = final.parent
+
+path.reverse()
+for p in path:
+    print(f"Matrix: \n {p[0]} \nCost: {p[1]} \n")
     
-print(final.cost)
