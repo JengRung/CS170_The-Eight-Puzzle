@@ -292,11 +292,11 @@ def main():
             [4,6,1],
             [3,5,8]])
     
-    print("Welcome to my 8-Puzzle Solver. Type '1' to use a default puzzle, or '2' tocreate your own.")
+    print("Welcome to my 8-Puzzle Solver: \nType '1' to use a default puzzle  \nType '2' to create your own.")
     choice = int(input())
     
     if choice == 1:
-        print("\nYou select to use the default puzzle. Type '1' for Depth 0, '2' for Depth 2, '3' for Depth 4, '4' for Depth 8, '5' for Depth 16, '6' for Depth 20, '7' for Depth 24. Error input will automatically use Depth 16.")
+        print("\nYou select to use the default puzzle. \nType '1' for Depth 0  \nType '2' for Depth 2 \nType '3' for Depth 4 \nType '4' for Depth 8 \nType '5' for Depth 16 \nType '6' for Depth 20 \nType '7' for Depth 24. \n**Error input will automatically use Depth 16.\n")
         choice = int(input())
         if choice == 1:
             print("You select Depth 0")
@@ -341,7 +341,7 @@ def main():
 
     start = puzzle(puzzleChoice)
     
-    print("\nEnter your choice of algorithm. Type '1' for Uniform Cost Search, '2' for A* with the Misplaced Tile heuristic, or '3' for A* with the Manhattan distance heuristic.")
+    print("\nEnter your choice of algorithm: \nType '1' for Uniform Cost Search \nType '2' for A* with the Misplaced Tile heuristic \nType '3' for A* with the Manhattan distance heuristic.")
     choice = int(input())
     print()
     
