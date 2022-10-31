@@ -7,6 +7,7 @@ class puzzle:
         self.parent = None
         self.height = 0
         self.cost = 0
+        self.expended = 0   # Number of expended node
         
     def printMatrix(self):
         for row in self.matrix:
@@ -99,6 +100,9 @@ def uniform_cost_search(start, goal):
     # An array to keep track of all the visited matrix
     seen = []
     
+    # Count the expended node, increment 1 when a node is pop from the queue 
+    expendCnt = 0
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -107,6 +111,11 @@ def uniform_cost_search(start, goal):
         
         # Get the first element in the queue
         current = queue.pop(0)
+        expendCnt += 1
+        
+        # Check for the goal state
+        if current.checkGoalState(goal):
+            return current
 
         # Add current to seen, convert numpy array to list to be able to compare
         seen.append(current.getMatrix().tolist())
@@ -116,12 +125,10 @@ def uniform_cost_search(start, goal):
         
         # Loop through all the child
         for c in child:
-            # Check if the child is the same as goal
-            if c.checkGoalState(goal):
-                return c
-        
             # If child not in seen, Add the child to the queue
             if c.getMatrix().tolist() not in seen:
+                # Update expend node count
+                c.expended = expendCnt
                 queue.append(c)
 
 # Helper function to calculate the misplaced tiles
@@ -130,7 +137,7 @@ def misplaced_tiles(matrix, goal):
     count = 0
     for i in range(len(matrix)):
         for j in range(len(matrix[i])):
-            if matrix[i][j] != goal[i][j]:
+            if matrix[i][j] != goal[i][j] and matrix[i][j] != 0:
                 count += 1
     return count
 
@@ -147,6 +154,9 @@ def a_star_with_misplaced_tiles(start, goal):
     # An array to keep track of all the visited matrix
     seen = []
     
+    # Count the expended node, increment 1 when a node is pop from the queue 
+    expendCnt = 0
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -155,6 +165,11 @@ def a_star_with_misplaced_tiles(start, goal):
         
         # Get the first element in the queue
         current = queue.pop(0)
+        expendCnt += 1
+        
+        # Check for the goal state
+        if current.checkGoalState(goal):
+            return current
 
         # Add current to seen, convert numpy array to list to be able to compare
         seen.append(current.getMatrix().tolist())
@@ -163,15 +178,13 @@ def a_star_with_misplaced_tiles(start, goal):
         child = current.getChild()
         
         # Loop through all the child
-        for c in child:
-            # Check if the child is the same as goal
-            if c.checkGoalState(goal):
-                return c
-        
+        for c in child:      
             # If child not in seen, Add the child to the queue with the cost
             if c.getMatrix().tolist() not in seen:
                 # Calculate the cost of the child base on misplaced tiles
-                c.cost = misplaced_tiles(c.getMatrix(), goal)
+                c.cost = misplaced_tiles(c.getMatrix(), goal) + c.height
+                # Update expend node count
+                c.expended = expendCnt
                 queue.append(c)
                 
         # Sort the queue by cost
@@ -206,6 +219,9 @@ def a_star_with_manhattan_distance(start, goal):
     # An array to keep track of all the visited matrix
     seen = []
     
+    # Count the expended node, increment 1 when a node is pop from the queue 
+    expendCnt = 0
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -214,6 +230,11 @@ def a_star_with_manhattan_distance(start, goal):
         
         # Get the first element in the queue
         current = queue.pop(0)
+        expendCnt += 1
+        
+        # Check for the goal state
+        if current.checkGoalState(goal):
+            return current
 
         # Add current to seen, convert numpy array to list to be able to compare
         seen.append(current.getMatrix().tolist())
@@ -222,15 +243,13 @@ def a_star_with_manhattan_distance(start, goal):
         child = current.getChild()
         
         # Loop through all the child
-        for c in child:
-            # Check if the child is the same as goal
-            if c.checkGoalState(goal):
-                return c
-        
+        for c in child:      
             # If child not in seen, Add the child to the queue with the cost
             if c.getMatrix().tolist() not in seen:
                 # Calculate the cost of the child base on misplaced tiles
-                c.cost = manhattan_distance(c.getMatrix(), goal)
+                c.cost = manhattan_distance(c.getMatrix(), goal) + c.height
+                # Update expend node count
+                c.expended = expendCnt
                 queue.append(c)
                 
         # Sort the queue by cost
@@ -355,15 +374,15 @@ def main():
         # Store the solution path to an array, then print it out with the corresponding height
         path = []
         while(result.parent != None):
-            path.append((result.getMatrix(), result.height))
+            path.append((result.getMatrix(), result.height, result.expended))
             result = result.parent
-            
+        path.append((result.getMatrix(), result.height, result.expended))
         path.reverse()
         
         for p in path:
             print("Matrix: ")
             printMatrix(p[0])
-            print("Height: " + str(p[1]) + "\n")
+            print("Height: " + str(p[1]) + "\tExpended: " + str(p[2]) + "\n")
         
     if choice == 2:
         print("You select to use A* with the Misplaced Tile heuristic")
@@ -375,15 +394,15 @@ def main():
         # Store the solution path to an array, then print it out with the corresponding height
         path = []
         while(result.parent != None):
-            path.append((result.getMatrix(), result.height))
+            path.append((result.getMatrix(), result.height, result.expended))
             result = result.parent
-            
+        path.append((result.getMatrix(), result.height, result.expended))
         path.reverse()
         
         for p in path:
             print("Matrix: ")
             printMatrix(p[0])
-            print("Height: " + str(p[1]) + "\n")
+            print("Height: " + str(p[1]) + "\tExpended: " + str(p[2])  + "\n")
             
     if choice == 3:
         print("You select to use A* with the Manhattan distance heuristic")
@@ -395,70 +414,17 @@ def main():
         # Store the solution path to an array, then print it out with the corresponding height
         path = []
         while(result.parent != None):
-            path.append((result.getMatrix(), result.height))
+            path.append((result.getMatrix(), result.height, result.expended))
             result = result.parent
-            
+        path.append((result.getMatrix(), result.height, result.expended))
         path.reverse()
         
         for p in path:
             print("Matrix: ")
             printMatrix(p[0])
-            print("Height: " + str(p[1]) + "\n")    
+            print("Height: " + str(p[1]) + "\tExpended: " + str(p[2])  + "\n")    
     
     print(f"Algorithm finish! Taking {endTime - startTime} seconds \n \n")
     
 if __name__ == "__main__":
     main()   
-
-
-# # Tester for uniform cost search
-# start = time.time()
-# final = uniform_cost_search(p1, goal)
-# end = time.time()
-# print(f"Finish! Taking {end - start} seconds \n \n")
-
-# print(f"COST: {final.height}")
-
-# while(final.parent != None):
-#     path.append((final.getMatrix(), final.height))
-#     final = final.parent
-
-# path.reverse()
-# for p in path:
-#     print(f"Matrix: \n {p[0]} \nCost: {p[1]} \n")
-    
-    
-# # Tester for A* with misplaced tiles
-# start = time.time()
-# final = a_star_with_misplaced_tiles(p1, goal)
-# end = time.time()
-# print(f"Finish! Taking {end - start} seconds \n \n")
-
-# print(f"COST: {final.cost}")
-
-# path = []
-# while(final.parent != None):
-#     path.append((final.getMatrix(), final.cost))
-#     final = final.parent
-
-# path.reverse()
-# for p in path:
-#     print(f"Matrix: \n {p[0]} \nCost: {p[1]} \n")
-    
-    
-# # Tester for A* with manhattan distance
-# start = time.time()
-# final = a_star_with_manhattan_distance(p1, goal)
-# end = time.time()
-# print(f"Finish! Taking {end - start} seconds \n \n")
-
-# print(f"COST: {final.cost}")
-
-# path = []
-# while(final.parent != None):
-#     path.append((final.getMatrix(), final.cost))
-#     final = final.parent
-
-# path.reverse()
-# for p in path:
-#     print(f"Matrix: \n {p[0]} \nCost: {p[1]} \n")
