@@ -8,6 +8,7 @@ class puzzle:
         self.height = 0
         self.cost = 0
         self.expended = 0   # Number of expended node
+        self.maxQueue = 0   # Max size of queue
         
     def printMatrix(self):
         for row in self.matrix:
@@ -103,6 +104,9 @@ def uniform_cost_search(start, goal):
     # Count the expended node, increment 1 when a node is pop from the queue 
     expendCnt = 0
     
+    # Record the max size of the queue
+    maxQueue = len(queue)
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -115,6 +119,8 @@ def uniform_cost_search(start, goal):
         
         # Check for the goal state
         if current.checkGoalState(goal):
+            # Store the max size of the queue to the result Node
+            current.maxQueue = maxQueue   
             return current
 
         # Add current to seen, convert numpy array to list to be able to compare
@@ -130,6 +136,10 @@ def uniform_cost_search(start, goal):
                 # Update expend node count
                 c.expended = expendCnt
                 queue.append(c)
+                
+        # Update max queue size
+        if len(queue) > maxQueue:
+            maxQueue = len(queue)
 
 # Helper function to calculate the misplaced tiles
 # Logic: Calculate the total number of misplaced tiles
@@ -157,6 +167,9 @@ def a_star_with_misplaced_tiles(start, goal):
     # Count the expended node, increment 1 when a node is pop from the queue 
     expendCnt = 0
     
+    # Record the max size of the queue
+    maxQueue = len(queue)
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -169,6 +182,8 @@ def a_star_with_misplaced_tiles(start, goal):
         
         # Check for the goal state
         if current.checkGoalState(goal):
+            # Store the max size of the queue to the result Node
+            current.maxQueue = maxQueue  
             return current
 
         # Add current to seen, convert numpy array to list to be able to compare
@@ -186,6 +201,10 @@ def a_star_with_misplaced_tiles(start, goal):
                 # Update expend node count
                 c.expended = expendCnt
                 queue.append(c)
+        
+        # Update max queue size
+        if len(queue) > maxQueue:
+            maxQueue = len(queue) 
                 
         # Sort the queue by cost
         queue = sorted(queue, key=lambda x: x.cost, reverse=False)
@@ -222,6 +241,9 @@ def a_star_with_manhattan_distance(start, goal):
     # Count the expended node, increment 1 when a node is pop from the queue 
     expendCnt = 0
     
+    # Record the max size of the queue
+    maxQueue = len(queue)
+    
     # Loop until the queue is empty
     while(True):
         # Check if queue is empty, then return failure
@@ -234,6 +256,8 @@ def a_star_with_manhattan_distance(start, goal):
         
         # Check for the goal state
         if current.checkGoalState(goal):
+            # Store the max size of the queue to the result Node
+            current.maxQueue = maxQueue  
             return current
 
         # Add current to seen, convert numpy array to list to be able to compare
@@ -251,6 +275,10 @@ def a_star_with_manhattan_distance(start, goal):
                 # Update expend node count
                 c.expended = expendCnt
                 queue.append(c)
+        
+        # Update max queue size
+        if len(queue) > maxQueue:
+            maxQueue = len(queue)
                 
         # Sort the queue by cost
         queue = sorted(queue, key=lambda x: x.cost, reverse=False)
@@ -259,6 +287,7 @@ def a_star_with_manhattan_distance(start, goal):
 def printMatrix(matrix):
     for m in matrix:
         print(m)
+    print()
    
 # Main function start here
 def main():
@@ -316,26 +345,26 @@ def main():
     
     if choice == 1:
         print("\nYou select to use the default puzzle. \nType '1' for Depth 0  \nType '2' for Depth 2 \nType '3' for Depth 4 \nType '4' for Depth 8 \nType '5' for Depth 16 \nType '6' for Depth 20 \nType '7' for Depth 24. \n**Error input will automatically use Depth 16.\n")
-        choice = int(input())
-        if choice == 1:
+        choicePuz = int(input())
+        if choicePuz == 1:
             print("You select Depth 0")
             puzzleChoice = puzzle0
-        elif choice == 2:
+        elif choicePuz == 2:
             print("You select Depth 2")
             puzzleChoice = puzzle2
-        elif choice == 3:
+        elif choicePuz == 3:
             print("You select Depth 4")
             puzzleChoice = puzzle4
-        elif choice == 4:
+        elif choicePuz == 4:
             print("You select Depth 8")
             puzzleChoice = puzzle8
-        elif choice == 5:
+        elif choicePuz == 5:
             print("You select Depth 16")
             puzzleChoice = puzzle16
-        elif choice == 6:
+        elif choicePuz == 6:
             print("You select Depth 20")
             puzzleChoice = puzzle20
-        elif choice == 7:
+        elif choicePuz == 7:
             print("You select Depth 24")
             puzzleChoice = puzzle24
         else:
@@ -371,18 +400,26 @@ def main():
         result = uniform_cost_search(start, goal)
         endTime = time.time()
         
+        # Store result nodes expand
+        nodeExpand = result.expended
+        depth = result.height
+        maxQueue = result.maxQueue
+        
         # Store the solution path to an array, then print it out with the corresponding height
         path = []
         while(result.parent != None):
-            path.append((result.getMatrix(), result.height, result.expended))
+            path.append((result.getMatrix(), result.height, result.cost))
             result = result.parent
-        path.append((result.getMatrix(), result.height, result.expended))
+        path.append((result.getMatrix(), result.height, result.cost))
         path.reverse()
         
+        print("Initial State: ")
         for p in path:
-            print("Matrix: ")
+            print("The best state to expand with a g(n): " + str(p[1]) + "\th(n): " + str(p[2]) + " is:")
             printMatrix(p[0])
-            print("Height: " + str(p[1]) + "\tExpended: " + str(p[2]) + "\n")
+
+        print("Goal State! \n")
+        print("Solution path: " + str(depth) + "\nNumber of nodes expanded: " + str(nodeExpand) + "\nMax queue size: " + str(maxQueue))
         
     if choice == 2:
         print("You select to use A* with the Misplaced Tile heuristic")
@@ -391,6 +428,11 @@ def main():
         result = a_star_with_misplaced_tiles(start, goal)
         endTime = time.time()
         
+        # Store result nodes expand
+        nodeExpand = result.expended
+        depth = result.height
+        maxQueue = result.maxQueue
+        
         # Store the solution path to an array, then print it out with the corresponding height
         path = []
         while(result.parent != None):
@@ -400,9 +442,11 @@ def main():
         path.reverse()
         
         for p in path:
-            print("Matrix: ")
+            print("The best state to expand with a g(n): " + str(p[1]) + "\th(n): " + str(p[2]) + " is:")
             printMatrix(p[0])
-            print("Height: " + str(p[1]) + "\tExpended: " + str(p[2])  + "\n")
+        
+        print("Goal State! \n")
+        print("Solution path: " + str(depth) + "\nNumber of nodes expanded: " + str(nodeExpand) + "\nMax queue size: " + str(maxQueue))
             
     if choice == 3:
         print("You select to use A* with the Manhattan distance heuristic")
@@ -411,6 +455,11 @@ def main():
         result = a_star_with_manhattan_distance(start, goal)
         endTime = time.time()
         
+        # Store result nodes expand
+        nodeExpand = result.expended
+        depth = result.height
+        maxQueue = result.maxQueue
+        
         # Store the solution path to an array, then print it out with the corresponding height
         path = []
         while(result.parent != None):
@@ -420,9 +469,11 @@ def main():
         path.reverse()
         
         for p in path:
-            print("Matrix: ")
-            printMatrix(p[0])
-            print("Height: " + str(p[1]) + "\tExpended: " + str(p[2])  + "\n")    
+            print("The best state to expand with a g(n): " + str(p[1]) + "\th(n): " + str(p[2]) + " is:")
+            printMatrix(p[0])   
+            
+        print("Goal State! \n")
+        print("Solution path: " + str(depth) + "\nNumber of nodes expanded: " + str(nodeExpand) + "\nMax queue size: " + str(maxQueue))
     
     print(f"Algorithm finish! Taking {endTime - startTime} seconds \n \n")
     
